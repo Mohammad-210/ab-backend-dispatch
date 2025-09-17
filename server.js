@@ -38,10 +38,26 @@ app.get("/health", (req, res) => {
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-   console.error("❌ Server error:", err.message);
+   console.error("❌ Server error:", err && err.message ? err.message : err);
+
+   // Multer file size limit
+   if (err && err.code === "LIMIT_FILE_SIZE") {
+      return res.status(400).json({ error: "Bad Request", details: "File too large" });
+   }
+
+   // Busboy "Field name missing" error (happens when form-data is malformed)
+   if (err && /Field name missing/i.test(err.message || "")) {
+      return res.status(400).json({ error: "Bad Request", details: "Field name missing in multipart/form-data" });
+   }
+
+   // Multer invalid field name or other known client errors
+   if (err && (err instanceof Error) && (err.message.includes("Invalid file type") || err.message.includes("No file received"))) {
+      return res.status(400).json({ error: "Bad Request", details: err.message });
+   }
+
    res.status(500).json({
       error: "Internal server error",
-      details: err.message,
+      details: err && err.message ? err.message : String(err),
    });
 });
 

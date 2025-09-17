@@ -2,6 +2,14 @@ const uploadService = require("../services/uploadService");
 
 const uploadFile = async (req, res) => {
    try {
+      if (!req.file) {
+         console.error("❌ Upload error: missing file field");
+         return res.status(400).json({
+            error: "Bad Request",
+            details: "No file received. Send multipart/form-data with field name 'file'.",
+         });
+      }
+
       console.log(" File received:", req.file.originalname);
 
       // Store the file and get content type
