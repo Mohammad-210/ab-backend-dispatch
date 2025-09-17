@@ -2,7 +2,8 @@ const fs = require("fs");
 const path = require("path");
 const pdfParse = require("pdf-parse");
 const { createWorker } = require("tesseract.js");
-const { PdfConverter } = require("pdf-poppler");
+// NOTE: `pdf-poppler` is lazy-required inside `extractTextWithOCR` to avoid
+// platform checks at module load time which can break startup on some hosts.
 const uploadService = require("./uploadService");
 
 /**

@@ -6,27 +6,30 @@ const app = express();
 
 // Middleware
 app.use(cors());
+app.use(express.json()); // parse JSON bodies
 app.use(require("./middleware/logger"));
 
 // Routes
+// Main API mounts
 app.use("/api/upload", require("./routes/upload"));
 app.use("/api/ai", require("./routes/ai"));
 
-// Friendly root/info route so GET / doesn't 404 on deployments
+// Short aliases so base paths work for simple checks
+app.use("/upload", require("./routes/upload"));
+app.use("/ai", require("./routes/ai"));
+
+// Root - quick info for manual checks
 app.get("/", (req, res) => {
    res.json({
       status: "OK",
       message: "ab-backend-dispatch API",
       endpoints: {
-         upload: "/api/upload (POST multipart/form-data, field: file)",
-         ai: "/api/ai/:fileId (POST) - process uploaded file with AI",
+         health: "/health",
+         upload: "/api/upload (POST multipart form-data key `file`)",
+         ai: "/api/ai/:fileId (POST)",
       },
    });
 });
-
-// Convenience aliases (so callers can POST to /upload or /ai)
-app.use("/upload", require("./routes/upload"));
-app.use("/ai", require("./routes/ai"));
 
 // Health check route
 app.get("/health", (req, res) => {

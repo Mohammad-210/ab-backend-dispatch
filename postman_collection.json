@@ -1,0 +1,54 @@
+{
+  "info": {
+    "name": "ab-backend-dispatch",
+    "_postman_id": "",
+    "description": "Basic collection to test upload and AI endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Upload file",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "file",
+              "type": "file",
+              "src": ""
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/upload",
+          "host": ["{{baseUrl}}"],
+          "path": ["api","upload"]
+        }
+      }
+    },
+    {
+      "name": "Process AI",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": ""
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/ai/:fileId",
+          "host": ["{{baseUrl}}"],
+          "path": ["api","ai",":fileId"]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://ab-backend-dispatch-1.onrender.com"
+    }
+  ]
+}
