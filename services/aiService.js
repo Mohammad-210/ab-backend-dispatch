@@ -2,7 +2,6 @@ const OpenAI = require("openai");
 const fs = require("fs");
 const path = require("path");
 
-const pdf = require("pdf-poppler");
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -209,7 +208,20 @@ const convertPDFToBase64Images = async (fileId) => {
          fs.mkdirSync(outputDir, { recursive: true });
       }
 
-      // Convert PDF to images using pdf-poppler
+      // Convert PDF to images using pdf-poppler (optional dependency)
+      let pdfPoppler;
+      try {
+         // Avoid loading on unsupported platforms like some Linux environments on Render
+         if (process.platform === "linux" && process.env.RENDER === "true") {
+            throw new Error("pdf-poppler is disabled on Render Linux environment");
+         }
+         pdfPoppler = require("pdf-poppler");
+      } catch (e) {
+         console.warn("⚠️ pdf-poppler unavailable:", e.message);
+         throw new Error(
+            "PDF-to-image conversion is not available in this environment. Upload text-based PDFs or plain text."
+         );
+      }
       const opts = {
          format: "png",
          out_dir: outputDir,
@@ -217,7 +229,7 @@ const convertPDFToBase64Images = async (fileId) => {
          page: null, // null = all pages
       };
 
-      await pdf.convert(filePath, opts);
+      await pdfPoppler.convert(filePath, opts);
 
       // Read generated image files and convert to base64
       const imageFiles = fs

@@ -2,7 +2,6 @@ const fs = require("fs");
 const path = require("path");
 const pdfParse = require("pdf-parse");
 const { createWorker } = require("tesseract.js");
-const { PdfConverter } = require("pdf-poppler");
 const uploadService = require("./uploadService");
 
 /**
@@ -48,6 +47,19 @@ async function extractTextWithOCR(filePath) {
    console.log("🖼️ Converting PDF to images for OCR...");
    const outputDir = `${filePath}_images`;
    fs.mkdirSync(outputDir, { recursive: true });
+   // Lazy-load pdf-poppler so unsupported platforms won't crash on startup
+   let PdfConverter;
+   try {
+      if (process.platform === "linux" && process.env.RENDER === "true") {
+         throw new Error("pdf-poppler disabled on Render Linux environment");
+      }
+      ({ PdfConverter } = require("pdf-poppler"));
+   } catch (e) {
+      console.warn("⚠️ pdf-poppler unavailable:", e.message);
+      throw new Error(
+         "OCR fallback requires pdf-poppler, which isn't available in this environment. Please use text-based PDFs."
+      );
+   }
 
    const converter = new PdfConverter(filePath);
    await converter.convert(outputDir);
