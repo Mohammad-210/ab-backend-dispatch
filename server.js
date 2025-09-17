@@ -12,6 +12,22 @@ app.use(require("./middleware/logger"));
 app.use("/api/upload", require("./routes/upload"));
 app.use("/api/ai", require("./routes/ai"));
 
+// Friendly root/info route so GET / doesn't 404 on deployments
+app.get("/", (req, res) => {
+   res.json({
+      status: "OK",
+      message: "ab-backend-dispatch API",
+      endpoints: {
+         upload: "/api/upload (POST multipart/form-data, field: file)",
+         ai: "/api/ai/:fileId (POST) - process uploaded file with AI",
+      },
+   });
+});
+
+// Convenience aliases (so callers can POST to /upload or /ai)
+app.use("/upload", require("./routes/upload"));
+app.use("/ai", require("./routes/ai"));
+
 // Health check route
 app.get("/health", (req, res) => {
    res.json({ status: "OK", message: "Server is running" });
