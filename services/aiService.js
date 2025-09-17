@@ -2,7 +2,11 @@ const OpenAI = require("openai");
 const fs = require("fs");
 const path = require("path");
 
-const pdf = require("pdf-poppler");
+// NOTE: `pdf-poppler` can perform platform checks and may throw on require
+// in environments where native dependencies are missing. Lazy-require it
+// inside the function that needs it so the app can start even if the
+// system binary / native bindings are not present. When used, we surface
+// a clear error explaining how to fix the environment.
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -210,14 +214,24 @@ const convertPDFToBase64Images = async (fileId) => {
       }
 
       // Convert PDF to images using pdf-poppler
-      const opts = {
+         let pdf;
+         try {
+            pdf = require("pdf-poppler");
+         } catch (e) {
+            throw new Error(
+               "Missing native dependency 'pdf-poppler' or its system prerequisites. Install poppler-utils (pdftoppm) on the host or use a Docker image that includes it. Original error: " +
+                  e.message
+            );
+         }
+
+         const opts = {
          format: "png",
          out_dir: outputDir,
          out_prefix: "page",
          page: null, // null = all pages
       };
 
-      await pdf.convert(filePath, opts);
+         await pdf.convert(filePath, opts);
 
       // Read generated image files and convert to base64
       const imageFiles = fs

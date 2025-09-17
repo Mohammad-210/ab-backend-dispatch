@@ -49,6 +49,17 @@ async function extractTextWithOCR(filePath) {
    const outputDir = `${filePath}_images`;
    fs.mkdirSync(outputDir, { recursive: true });
 
+   let PdfConverter;
+   try {
+      // Lazy require to avoid module load-time platform checks
+      ({ PdfConverter } = require("pdf-poppler"));
+   } catch (e) {
+      throw new Error(
+         "Missing native dependency 'pdf-poppler' or its system prerequisites. Install poppler-utils (pdftoppm) on the host or use a Docker image that includes it. Original error: " +
+            e.message
+      );
+   }
+
    const converter = new PdfConverter(filePath);
    await converter.convert(outputDir);
 
